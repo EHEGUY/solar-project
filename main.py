@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Tuple
 import math
 import numpy as np
+import os
 
 app = FastAPI(title="Solar API Corrected", version="2.2.1")
 
@@ -187,9 +188,13 @@ def _optimize_tilt_azimuth(latitude: float, longitude: float, min_tilt: float, m
 
     return best_tilt, best_az, float(best_poa), evaluated
 
+@app.get("/")
+def root():
+    return {"message": "Solar API is running!", "version": "2.2.1"}
+
 @app.get("/health")
 def health():
-    return {"ok": True}
+    return {"status": "healthy", "message": "API is operational"}
 
 @app.post("/optimize")
 def optimize(req: OptimizeRequest):
@@ -242,3 +247,22 @@ def optimize(req: OptimizeRequest):
     }
 
     return response
+
+# Simple Python server that runs with python main.py
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Get port from environment variable (for Render) or default to 8000
+    port = int(os.environ.get("PORT", 8000))
+    
+    print(f"Starting Solar API server on port {port}")
+    print(f"Access the API at: http://localhost:{port}")
+    print(f"API Documentation: http://localhost:{port}/docs")
+    
+    # Run the server
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=port,
+        log_level="info"
+    )
